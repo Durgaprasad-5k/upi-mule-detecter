@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPI Mule Account Detector — Dashboard</title>
+    <meta name="description" content="Real-time UPI mule account detection using graph-based cycle and star topology analysis.">
+    <link rel="stylesheet" href="/frontend/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-grid"></div>
+    <div class="bg-glow glow-1"></div>
+    <div class="bg-glow glow-2"></div>
+    <div class="bg-glow glow-3"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+            </div>
+            <div class="brand-text">
+                <span class="brand-name">MuleDetector</span>
+                <span class="brand-version">v2.0</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                Dashboard
+            </a>
+            <a href="#results-section" class="nav-item">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                Results
+            </a>
+            <a href="#performance-section" class="nav-item">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                Performance
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="connection-status">
+                <span class="status-dot online"></span>
+                <span>System Online</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+        <!-- Top Bar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1 class="page-title">Detection Dashboard</h1>
+                <span class="page-subtitle">UPI Fraud Intelligence Platform</span>
+            </div>
+            <div class="topbar-right">
+                <div class="live-indicator" id="live-indicator">
+                    <span class="live-dot"></span>
+                    <span id="live-text">IDLE</span>
+                </div>
+                <button id="run-btn" class="run-btn">
+                    <svg class="btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    <span class="btn-text">Run Detection</span>
+                    <div class="btn-spinner hidden"></div>
+                </button>
+            </div>
+        </header>
+
+        <!-- Stats Row -->
+        <section class="stats-row">
+            <div class="stat-card">
+                <div class="stat-icon icon-f1">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                </div>
+                <div class="stat-body">
+                    <span class="stat-label">F1-Score</span>
+                    <span class="stat-value" id="f1-score">—</span>
+                    <span class="stat-tag tag-target">Target &gt; 0.85</span>
+                </div>
+                <div class="stat-ring" id="f1-ring">
+                    <svg viewBox="0 0 36 36">
+                        <path class="ring-bg" d="M18 2.0845a15.9155 15.9155 0 0 1 0 31.831a15.9155 15.9155 0 0 1 0-31.831" fill="none" stroke-width="3"/>
+                        <path class="ring-fill" id="f1-ring-fill" d="M18 2.0845a15.9155 15.9155 0 0 1 0 31.831a15.9155 15.9155 0 0 1 0-31.831" fill="none" stroke-width="3" stroke-dasharray="0, 100"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon icon-precision">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                </div>
+                <div class="stat-body">
+                    <span class="stat-label">Precision</span>
+                    <span class="stat-value" id="precision">—</span>
+                    <span class="stat-tag tag-info">Flagged Accuracy</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon icon-recall">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </div>
+                <div class="stat-body">
+                    <span class="stat-label">Recall</span>
+                    <span class="stat-value" id="recall">—</span>
+                    <span class="stat-tag tag-info">Catch Rate</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon icon-mules">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                </div>
+                <div class="stat-body">
+                    <span class="stat-label">Mules Detected</span>
+                    <span class="stat-value" id="mules-detected">—</span>
+                    <span class="stat-tag tag-warn" id="mule-breakdown">— cycle · — star</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Middle Row: Detection Breakdown + Performance -->
+        <section class="middle-row">
+            <!-- Detection Breakdown -->
+            <div class="card breakdown-card">
+                <div class="card-header">
+                    <h2>Detection Breakdown</h2>
+                </div>
+                <div class="card-body">
+                    <div class="breakdown-bars">
+                        <div class="bar-group">
+                            <div class="bar-label">
+                                <span class="bar-name">Cycle Detection</span>
+                                <span class="bar-count" id="cycle-count">0</span>
+                            </div>
+                            <div class="bar-track">
+                                <div class="bar-fill bar-cycle" id="cycle-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="bar-group">
+                            <div class="bar-label">
+                                <span class="bar-name">Star Detection</span>
+                                <span class="bar-count" id="star-count">0</span>
+                            </div>
+                            <div class="bar-track">
+                                <div class="bar-fill bar-star" id="star-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="bar-group">
+                            <div class="bar-label">
+                                <span class="bar-name">Both Methods</span>
+                                <span class="bar-count" id="both-count">0</span>
+                            </div>
+                            <div class="bar-track">
+                                <div class="bar-fill bar-both" id="both-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="confusion-matrix" id="confusion-matrix">
+                        <div class="matrix-header">Confusion Matrix</div>
+                        <div class="matrix-grid">
+                            <div class="matrix-cell header"></div>
+                            <div class="matrix-cell header">Pred Mule</div>
+                            <div class="matrix-cell header">Pred Legit</div>
+                            <div class="matrix-cell header">Actual Mule</div>
+                            <div class="matrix-cell tp" id="tp-cell">0</div>
+                            <div class="matrix-cell fn" id="fn-cell">0</div>
+                            <div class="matrix-cell header">Actual Legit</div>
+                            <div class="matrix-cell fp" id="fp-cell">0</div>
+                            <div class="matrix-cell tn" id="tn-cell">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Card -->
+            <div class="card performance-card" id="performance-section">
+                <div class="card-header">
+                    <h2>Pipeline Performance</h2>
+                    <span class="perf-badge" id="perf-badge">—</span>
+                </div>
+                <div class="card-body">
+                    <div class="perf-gauge-wrapper">
+                        <canvas id="perf-gauge" width="200" height="120"></canvas>
+                        <div class="gauge-label" id="gauge-label">—</div>
+                        <div class="gauge-sub">Combined Time (target &lt; 2.0s)</div>
+                    </div>
+                    <div class="perf-phases">
+                        <div class="phase-row">
+                            <span class="phase-name">Phase 2 — Cycle Detection</span>
+                            <span class="phase-time" id="phase2-time">—</span>
+                        </div>
+                        <div class="phase-row">
+                            <span class="phase-name">Phase 3 — Velocity Detection</span>
+                            <span class="phase-time" id="phase3-time">—</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Results Table -->
+        <section class="card results-card" id="results-section">
+            <div class="card-header">
+                <h2>Suspected Mule Accounts</h2>
+                <div class="table-controls">
+                    <input type="text" class="search-input" id="search-input" placeholder="Search accounts...">
+                    <select class="filter-select" id="filter-select">
+                        <option value="all">All Sources</option>
+                        <option value="CYCLE">Cycle Only</option>
+                        <option value="STAR">Star Only</option>
+                        <option value="BOTH">Both</option>
+                    </select>
+                </div>
+            </div>
+            <div class="card-body table-body">
+                <table id="results-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Account ID</th>
+                            <th>Risk Score</th>
+                            <th>Detection Source</th>
+                            <th>Ground Truth</th>
+                            <th>Pattern Type</th>
+                        </tr>
+                    </thead>
+                    <tbody id="results-tbody">
+                        <tr class="empty-row"><td colspan="6">Run the pipeline to see results.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <footer class="main-footer">
+            <span>UPI Mule Detector · Graph Database Analyzer · 10,000 accounts</span>
+        </footer>
+    </div>
+
+    <script src="/frontend/app.js?v=2"></script>
+</body>
+</html>
